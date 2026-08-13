@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Production Problem Control Board</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:"Segoe UI",Arial,sans-serif; background:#f1f5f9; color:#1e293b; font-size:14px; }
+  header { background:#1f3a5f; color:#fff; box-shadow:0 1px 4px rgba(0,0,0,.2); }
+  .header-inner { max-width:1180px; margin:0 auto; padding:16px 24px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  header h1 { font-size:18px; letter-spacing:.5px; }
+  .header-actions { display:flex; gap:8px; }
+  .btn { border:none; cursor:pointer; border-radius:8px; font-size:14px; font-weight:600; padding:9px 16px; }
+  .btn-add { background:rgba(255,255,255,.18); color:#fff; } .btn-add:hover { background:rgba(255,255,255,.3); }
+  .btn-xls { background:#16794a; color:#fff; } .btn-xls:hover { background:#115c37; }
+  .btn-pdf { background:#b23b3b; color:#fff; } .btn-pdf:hover { background:#8f2d2d; }
+  .btn-primary { background:#2563eb; color:#fff; } .btn-primary:hover { background:#1d4ed8; }
+  .btn-ghost { background:#fff; border:1px solid #cbd5e1; color:#475569; } .btn-ghost:hover { background:#f8fafc; }
+  main { max-width:1180px; margin:0 auto; padding:24px; }
+  .kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:20px; }
+  .kpi { background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:18px 20px; box-shadow:0 1px 3px rgba(0,0,0,.05); position:relative; overflow:hidden; }
+  .kpi .label { font-size:13px; color:#64748b; font-weight:600; }
+  .kpi .value { font-size:30px; font-weight:700; margin-top:6px; }
+  .kpi .sub { font-size:12px; color:#94a3b8; margin-top:2px; }
+  .kpi .bar { position:absolute; left:0; top:0; bottom:0; width:5px; }
+  .kpi.total .bar{background:#3b82f6}.kpi.total .value{color:#1e3a8a}
+  .kpi.open .bar{background:#ef4444}.kpi.open .value{color:#b91c1c}
+  .kpi.close .bar{background:#22c55e}.kpi.close .value{color:#15803d}
+  .kpi.over .bar{background:#f59e0b}.kpi.over .value{color:#b45309}
+  .chart-grid { display:grid; grid-template-columns:1.2fr 1fr 1.2fr; gap:16px; margin-bottom:24px; }
+  .card { background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:18px; box-shadow:0 1px 3px rgba(0,0,0,.05); }
+  .card h3 { font-size:14px; color:#334155; margin-bottom:14px; }
+  .barrow { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  .barrow .name { width:78px; font-size:12px; color:#475569; text-align:right; }
+  .bartrack { flex:1; background:#f1f5f9; border-radius:6px; height:20px; overflow:hidden; }
+  .barfill { height:100%; border-radius:6px; }
+  .barrow .num { width:22px; font-size:12px; font-weight:600; color:#334155; }
+  .donut-wrap { display:flex; align-items:center; gap:18px; }
+  .legend { font-size:13px; } .legend div { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+  .dot { width:12px; height:12px; border-radius:3px; }
+  .toolbar { display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; margin-bottom:16px; }
+  .toolbar-left { display:flex; gap:8px; }
+  input,select,textarea { font-family:inherit; font-size:14px; border:1px solid #cbd5e1; border-radius:8px; padding:8px 12px; outline:none; background:#fff; }
+  input:focus,select:focus,textarea:focus { border-color:#3b82f6; box-shadow:0 0 0 1px #3b82f6; }
+  #search { width:240px; } .muted { color:#64748b; } .muted b { color:#334155; }
+  .table-wrap { background:#fff; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,.05); }
+  table { width:100%; border-collapse:collapse; }
+  thead { background:#dbe7f3; }
+  th { text-align:left; font-weight:600; color:#334155; padding:12px; font-size:13px; }
+  td { padding:12px; border-top:1px solid #eef2f7; }
+  tbody tr:hover { background:#f8fafc; }
+  .empty { text-align:center; color:#94a3b8; padding:24px; }
+  .del-btn { background:none; border:none; color:#cbd5e1; cursor:pointer; font-size:16px; } .del-btn:hover { color:#ef4444; }
+  .thumb { width:44px; height:44px; object-fit:cover; border-radius:8px; border:1px solid #cbd5e1; cursor:pointer; transition:transform .15s; }
+  .thumb:hover { transform:scale(1.08); border-color:#3b82f6; }
+  .no-photo { width:44px; height:44px; border-radius:8px; border:1px dashed #cbd5e1; display:flex; align-items:center; justify-content:center; color:#cbd5e1; }
+  .lightbox { position:fixed; inset:0; background:rgba(0,0,0,.8); display:none; align-items:center; justify-content:center; z-index:60; padding:24px; }
+  .lightbox.show { display:flex; }
+  .lightbox img { max-width:90vw; max-height:85vh; border-radius:12px; box-shadow:0 10px 40px rgba(0,0,0,.5); }
+  .lightbox .lb-close { position:absolute; top:20px; right:28px; color:#fff; font-size:36px; cursor:pointer; line-height:1; }
+  .badge { border-radius:999px; padding:4px 12px; font-size:12px; font-weight:600; white-space:nowrap; }
+  .badge-open { background:#fee2e2; color:#b91c1c; } .badge-close { background:#dcfce7; color:#15803d; }
+  .overlay { position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; padding:16px; z-index:50; }
+  .overlay.show { display:flex; }
+  .modal { background:#fff; border-radius:16px; padding:24px; width:100%; max-width:520px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 40px rgba(0,0,0,.25); }
+  .modal-head { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px; }
+  .modal-head h2 { font-size:20px; } .modal-head p { color:#64748b; font-size:13px; margin-top:2px; }
+  .close-x { background:none; border:none; font-size:26px; color:#94a3b8; cursor:pointer; line-height:1; } .close-x:hover { color:#475569; }
+  .field { margin-bottom:16px; }
+  .field label { display:block; font-weight:600; margin-bottom:6px; font-size:13px; }
+  .field .req { color:#ef4444; }
+  .field input,.field select,.field textarea { width:100%; }
+  .row2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .radios { display:flex; gap:20px; padding-top:4px; }
+  .radios label { display:flex; align-items:center; gap:6px; font-weight:400; }
+  #preview { margin-top:8px; height:96px; width:96px; object-fit:cover; border-radius:8px; border:1px solid #cbd5e1; display:none; }
+  .actions { display:flex; justify-content:flex-end; gap:8px; margin-top:8px; }
+  @media (max-width:900px){ .kpi-grid{grid-template-columns:repeat(2,1fr)} .chart-grid{grid-template-columns:1fr} }
+  @media (max-width:640px){ .row2{grid-template-columns:1fr} #search{width:100%} }
+
+  tbody tr.overdue { background:#fef2f2; }
+  tbody tr.overdue:hover { background:#fee2e2; }
+  .row-actions { display:flex; gap:6px; }
+  .edit-btn { background:none; border:none; color:#cbd5e1; cursor:pointer; font-size:15px; }
+  .edit-btn:hover { color:#2563eb; }
+
+  @media print {
+    header, .toolbar, .actions, .row-actions, th:last-child, td:last-child { display:none !important; }
+    body { background:#fff; }
+    main { max-width:none; padding:0; }
+    .table-wrap, .card { box-shadow:none; border:1px solid #cbd5e1; }
+  }
+</style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <h1>PRODUCTION PROBLEM CONTROL BOARD</h1>
+      <div class="header-actions">
+        <button class="btn btn-xls" onclick="location.href='/api/export/csv'">Export Excel</button>
+        <button class="btn btn-pdf" onclick="window.print()">Export PDF</button>
+        <button class="btn btn-add" onclick="openForm()">+ Add Problem</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="kpi-grid">
+      <div class="kpi total"><span class="bar"></span><div class="label">Total Problem</div><div class="value" id="kpiTotal">0</div><div class="sub">Semua record</div></div>
+      <div class="kpi open"><span class="bar"></span><div class="label">Open</div><div class="value" id="kpiOpen">0</div><div class="sub">Belum selesai</div></div>
+      <div class="kpi close"><span class="bar"></span><div class="label">Close</div><div class="value" id="kpiClose">0</div><div class="sub">Sudah selesai</div></div>
+      <div class="kpi over"><span class="bar"></span><div class="label">Overdue</div><div class="value" id="kpiOver">0</div><div class="sub">Lewat due date</div></div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="card"><h3>Problem by Classification</h3><div id="chartClass"></div></div>
+      <div class="card"><h3>Open vs Close</h3>
+        <div class="donut-wrap">
+          <svg width="130" height="130" viewBox="0 0 42 42" id="donut"></svg>
+          <div class="legend">
+            <div><span class="dot" style="background:#ef4444"></span> Open <b id="lgOpen" style="margin-left:4px"></b></div>
+            <div><span class="dot" style="background:#22c55e"></span> Close <b id="lgClose" style="margin-left:4px"></b></div>
+          </div>
+        </div>
+      </div>
+      <div class="card"><h3>Problem by PIC</h3><div id="chartPic"></div></div>
+    </div>
+
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <input id="search" type="text" placeholder="Cari problem / PIC..." oninput="loadTable()" />
+        <select id="filterStatus" onchange="loadTable()">
+          <option value="All">All Status</option><option value="Open">Open</option><option value="Close">Close</option>
+        </select>
+      </div>
+      <div class="muted">Total: <b id="count">0</b> problem</div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>No</th><th>Date</th><th>Problem</th><th>Photo</th><th>Qty</th><th>Classification</th><th>PIC</th><th>Due Date</th><th>Status</th><th></th></tr></thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <div class="overlay" id="modal">
+    <div class="modal">
+      <div class="modal-head"><div><h2 id="modalTitle">Add Production Problem</h2><p>Isi minimal Date, Problem, dan PIC.</p></div>
+        <button class="close-x" onclick="closeForm()">&times;</button></div>
+      <form id="problemForm" onsubmit="saveProblem(event)">
+        <input type="hidden" name="id" id="editId" />
+        <div class="field"><label>Date <span class="req">*</span></label><input name="date" type="date" required /></div>
+        <div class="field"><label>Problem <span class="req">*</span></label><textarea name="problem" rows="2" required></textarea></div>
+        <div class="field"><label>Photo</label><input name="photo" type="file" accept="image/*" onchange="previewPhoto(event)" /><img id="preview" alt="preview" />
+          <label id="removePhotoWrap" style="display:none; font-weight:400; margin-top:6px; gap:6px; align-items:center; cursor:pointer;">
+            <input type="checkbox" name="removePhoto" value="1" style="width:auto" /> Hapus foto yang ada
+          </label>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Qty</label><input name="qty" type="number" placeholder="0" /></div>
+          <div class="field"><label>Classification</label><select name="classification"><option value="">- Pilih -</option><option>Quality</option><option>Production</option><option>Machine</option><option>Material</option></select></div>
+        </div>
+        <div class="field"><label>Root Cause</label><textarea name="root_cause" rows="2"></textarea></div>
+        <div class="field"><label>Countermeasure</label><textarea name="countermeasure" rows="2"></textarea></div>
+        <div class="row2">
+          <div class="field"><label>PIC <span class="req">*</span></label><select name="pic" required><option value="">- Pilih -</option><option>Hanif Mutaz</option><option>Tety Uci</option><option>Ridho Tri</option><option>Liska Waluyan</option></select></div>
+          <div class="field"><label>Due Date</label><input name="due_date" type="date" /></div>
+        </div>
+        <div class="field"><label>Status</label><div class="radios">
+          <label><input type="radio" name="status" value="Open" checked /> Open</label>
+          <label><input type="radio" name="status" value="Close" /> Close</label>
+        </div></div>
+        <div class="actions">
+          <button type="button" class="btn btn-ghost" onclick="closeForm()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Problem</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <span class="lb-close">&times;</span>
+    <img id="lightboxImg" alt="foto problem" />
+  </div>
+
+<script>
+  const API = "/api";
+  const TODAY = new Date().toISOString().slice(0,10);
+  const CLASS_COLOR = { Quality:"#3b82f6", Production:"#8b5cf6", Machine:"#f59e0b", Material:"#14b8a6" };
+  const modal = document.getElementById("modal");
+  let currentRows = [];
+
+  function openForm(){
+    problemForm.reset();
+    editId.value = "";
+    preview.style.display = "none";
+    removePhotoWrap.style.display = "none";
+    modalTitle.textContent = "Add Production Problem";
+    modal.classList.add("show");
+  }
+  function closeForm(){ modal.classList.remove("show"); }
+  function previewPhoto(e){ const f=e.target.files[0]; if(f){ preview.src=URL.createObjectURL(f); preview.style.display="block"; } }
+  function badge(s){ return `<span class="badge ${s==="Open"?"badge-open":"badge-close"}">${s}</span>`; }
+  function openLightbox(src){ lightboxImg.src = src; lightbox.classList.add("show"); }
+  function closeLightbox(){ lightbox.classList.remove("show"); }
+  function photoCell(src){
+    return src
+      ? `<img class="thumb" src="${src}" onclick="openLightbox('${src}')" title="Klik untuk perbesar" />`
+      : `<div class="no-photo">–</div>`;
+  }
+  function isOverdue(p){ return p.status === "Open" && p.due_date && p.due_date < TODAY; }
+
+  function openEdit(id){
+    const p = currentRows.find(r => r.id === id);
+    if(!p) return;
+    problemForm.reset();
+    editId.value = p.id;
+    modalTitle.textContent = "Edit Production Problem";
+    problemForm.date.value = p.date || "";
+    problemForm.problem.value = p.problem || "";
+    problemForm.qty.value = p.qty || 0;
+    problemForm.classification.value = p.classification || "";
+    problemForm.root_cause.value = p.root_cause || "";
+    problemForm.countermeasure.value = p.countermeasure || "";
+    problemForm.pic.value = p.pic || "";
+    problemForm.due_date.value = p.due_date || "";
+    problemForm.status.value = p.status || "Open";
+    if(p.photo){
+      preview.src = p.photo; preview.style.display = "block";
+      removePhotoWrap.style.display = "flex";
+    } else {
+      preview.style.display = "none";
+      removePhotoWrap.style.display = "none";
+    }
+    modal.classList.add("show");
+  }
+
+  async function saveProblem(e){
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const id = editId.value;
+    try {
+      const res = await fetch(`${API}/problems${id ? "/"+id : ""}`, { method: id ? "PUT" : "POST", body: fd });
+      if(!res.ok){ const j = await res.json().catch(()=>({})); alert(j.error || "Gagal simpan"); return; }
+      closeForm(); refresh();
+    } catch (err) {
+      alert("Gagal konek ke server. Cek koneksi / server-nya jalan gak.");
+    }
+  }
+  async function delProblem(id){
+    if(!confirm("Hapus problem ini?")) return;
+    try {
+      await fetch(`${API}/problems/${id}`, { method:"DELETE" });
+      refresh();
+    } catch (err) {
+      alert("Gagal konek ke server. Cek koneksi / server-nya jalan gak.");
+    }
+  }
+
+  function renderBars(elId,obj,colorFn){
+    const data = Object.entries(obj).sort((a,b)=>b[1]-a[1]);
+    const max = Math.max(...data.map(d=>d[1]),1);
+    document.getElementById(elId).innerHTML = data.map(([n,v])=>`
+      <div class="barrow"><div class="name" title="${n}">${n}</div>
+      <div class="bartrack"><div class="barfill" style="width:${v/max*100}%;background:${colorFn(n)}"></div></div>
+      <div class="num">${v}</div></div>`).join("") || `<div class="empty">Belum ada data</div>`;
+  }
+  function renderDonut(open,close){
+    const total=open+close||1; const openPct=open/total*100;
+    document.getElementById("donut").innerHTML = `
+      <circle cx="21" cy="21" r="15.915" fill="none" stroke="#22c55e" stroke-width="6"></circle>
+      <circle cx="21" cy="21" r="15.915" fill="none" stroke="#ef4444" stroke-width="6" stroke-dasharray="${openPct} ${100-openPct}" stroke-dashoffset="25"></circle>
+      <text x="21" y="20" text-anchor="middle" font-size="7" font-weight="700" fill="#334155">${open+close}</text>
+      <text x="21" y="26" text-anchor="middle" font-size="3.5" fill="#94a3b8">total</text>`;
+    lgOpen.textContent=open; lgClose.textContent=close;
+  }
+
+  async function loadSummary(){
+    try {
+      const s = await (await fetch(`${API}/summary`)).json();
+      kpiTotal.textContent=s.total; kpiOpen.textContent=s.open;
+      kpiClose.textContent=s.close; kpiOver.textContent=s.overdue;
+      renderBars("chartClass", s.byClassification, n=>CLASS_COLOR[n]||"#94a3b8");
+      renderBars("chartPic", s.byPic, ()=>"#1f3a5f");
+      renderDonut(s.open, s.close);
+    } catch (err) {
+      console.error("Gagal load summary", err);
+    }
+  }
+  async function loadTable(){
+    const q = encodeURIComponent(search.value);
+    const st = filterStatus.value;
+    try {
+      const rows = await (await fetch(`${API}/problems?q=${q}&status=${st}`)).json();
+      currentRows = rows;
+      tableBody.innerHTML = rows.map((p,i)=>`
+        <tr class="${isOverdue(p) ? "overdue" : ""}">
+        <td>${i+1}</td><td>${p.date}</td><td>${p.problem}</td><td>${photoCell(p.photo)}</td><td>${p.qty}</td>
+        <td>${p.classification||"-"}</td><td>${p.pic}</td><td>${p.due_date||"-"}</td><td>${badge(p.status)}</td>
+        <td><div class="row-actions">
+          <button class="edit-btn" onclick="openEdit(${p.id})" title="Edit">&#9998;</button>
+          <button class="del-btn" onclick="delProblem(${p.id})" title="Hapus">&times;</button>
+        </div></td></tr>`).join("")
+        || `<tr><td class="empty" colspan="10">Belum ada data</td></tr>`;
+      count.textContent = rows.length;
+    } catch (err) {
+      tableBody.innerHTML = `<tr><td class="empty" colspan="10">Gagal ambil data dari server</td></tr>`;
+    }
+  }
+  function refresh(){ loadSummary(); loadTable(); }
+  refresh();
+</script>
+</body>
+</html>
