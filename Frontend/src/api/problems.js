@@ -3,6 +3,9 @@
 // Kalau backend-nya beda origin, set VITE_API_BASE di .env, mis: VITE_API_BASE=http://localhost:3000/api
 const API = import.meta.env.VITE_API_BASE || "/api";
 
+// Label buat ditampilin di pesan error kalau fetch gagal - biar gak hardcode port yang salah.
+export const apiBaseLabel = import.meta.env.VITE_API_BASE || "backend (lihat vite.config.js proxy)";
+
 async function toJson(res) {
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));

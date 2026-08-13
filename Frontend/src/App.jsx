@@ -1,3 +1,4 @@
+import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useEffect, useState } from "react";
 import Header from "./components/Header";
 import KpiCards from "./components/KpiCards";
@@ -7,7 +8,7 @@ import Toolbar from "./components/Toolbar";
 import ProblemTable from "./components/ProblemTable";
 import ProblemModal from "./components/ProblemModal";
 import Lightbox from "./components/Lightbox";
-import { getProblems, getSummary, createProblem, updateProblem, deleteProblem } from "./api/problems";
+import { getProblems, getSummary, createProblem, updateProblem, deleteProblem, apiBaseLabel } from "./api/problems";
 
 const CLASS_COLOR = { Quality: "#3b82f6", Production: "#8b5cf6", Machine: "#f59e0b", Material: "#14b8a6" };
 
@@ -73,11 +74,19 @@ export default function App() {
       <Header onAdd={handleAdd} />
 
       <main className="mx-auto max-w-[1180px] p-6">
-        {loadError && (
-          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 no-print">
-            Gagal konek ke server. Pastikan backend (ppcb-backend) jalan di port 3000.
-          </div>
-        )}
+        <AnimatePresence>
+          {loadError && (
+            <motion.div
+              initial={{ opacity: 0, y: -10, height: 0 }}
+              animate={{ opacity: 1, y: 0, height: "auto" }}
+              exit={{ opacity: 0, y: -10, height: 0 }}
+              transition={{ duration: 0.25 }}
+              className="mb-4 overflow-hidden rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 no-print"
+            >
+              Gagal konek ke server. Pastikan {apiBaseLabel} aktif dan bisa diakses.
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <KpiCards summary={summary} />
 
@@ -98,6 +107,7 @@ export default function App() {
         onClose={handleClose}
         onSubmit={handleSubmit}
         submitting={submitting}
+        onPreviewClick={setLightbox}
       />
       <Lightbox src={lightbox} onClose={() => setLightbox(null)} />
     </div>

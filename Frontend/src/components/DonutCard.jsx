@@ -1,19 +1,31 @@
+import { motion } from "framer-motion";
+import useCountUp from "../hooks/useCountUp";
+
 export default function DonutCard({ open, close }) {
   const total = open + close || 1;
   const openPct = (open / total) * 100;
+  const animatedTotal = useCountUp(open + close);
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4.5 shadow-sm">
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, delay: 0.1 }}
+      className="rounded-2xl border border-slate-200 bg-white p-4.5 shadow-sm"
+    >
       <h3 className="mb-3.5 text-sm font-semibold text-slate-700">Open vs Close</h3>
       <div className="flex items-center gap-4.5">
         <svg width="130" height="130" viewBox="0 0 42 42">
           <circle cx="21" cy="21" r="15.915" fill="none" stroke="#22c55e" strokeWidth="6" />
-          <circle
+          <motion.circle
             cx="21" cy="21" r="15.915" fill="none" stroke="#ef4444" strokeWidth="6"
-            strokeDasharray={`${openPct} ${100 - openPct}`} strokeDashoffset="25"
+            strokeDashoffset="25"
+            initial={{ strokeDasharray: "0 100" }}
+            animate={{ strokeDasharray: `${openPct} ${100 - openPct}` }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
           />
           <text x="21" y="20" textAnchor="middle" fontSize="7" fontWeight="700" fill="#334155">
-            {open + close}
+            {animatedTotal}
           </text>
           <text x="21" y="26" textAnchor="middle" fontSize="3.5" fill="#94a3b8">total</text>
         </svg>
@@ -26,6 +38,6 @@ export default function DonutCard({ open, close }) {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
