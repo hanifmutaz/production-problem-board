@@ -1,7 +1,4 @@
 node_modules/
-ppcb.db
-ppcb.db-journal
-ppcb.db-wal
-ppcb.db-shm
+.env
 public/uploads/*
 !public/uploads/.gitkeep
