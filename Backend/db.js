@@ -1,11 +1,13 @@
 // ============================================================
 // db.js - Setup database SQLite + auto-create tabel
+// Pake node:sqlite bawaan Node.js (Node 22.5+) - GAK butuh native
+// compile / Visual Studio Build Tools kayak better-sqlite3.
 // ============================================================
-const Database = require("better-sqlite3");
+const { DatabaseSync } = require("node:sqlite");
 const path = require("path");
 
-const db = new Database(path.join(__dirname, "ppcb.db"));
-db.pragma("journal_mode = WAL");
+const db = new DatabaseSync(path.join(__dirname, "ppcb.db"));
+db.exec("PRAGMA journal_mode = WAL");
 
 // Tabel utama
 db.exec(`
@@ -38,8 +40,14 @@ if (count === 0) {
     { date:"2026-08-08", problem:"Mesin crimping stop, sensor error",  qty:0,  classification:"Machine",    pic:"Ridho Tri",     due_date:"2026-08-14", status:"Close" },
     { date:"2026-08-09", problem:"Material housing salah warna",       qty:30, classification:"Material",   pic:"Tety Uci",      due_date:"2026-08-18", status:"Open" },
   ];
-  const insertMany = db.transaction((list) => list.forEach(r => seed.run(r)));
-  insertMany(rows);
+  db.exec("BEGIN");
+  try {
+    rows.forEach((r) => seed.run(r));
+    db.exec("COMMIT");
+  } catch (err) {
+    db.exec("ROLLBACK");
+    throw err;
+  }
   console.log("[db] Seed data awal dimasukkan.");
 }
 
