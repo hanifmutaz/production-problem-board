@@ -5,7 +5,7 @@ import { getPics } from "../api/problems";
 
 // Input PIC bebas ketik (bukan dropdown tetap). Nama-nama yang pernah disubmit
 // sebelumnya muncul sebagai rekomendasi/saran, tapi nama baru tetap bisa diketik & disimpan.
-export default function PicAutocomplete({ value, onChange, venue, required }) {
+export default function PicAutocomplete({ value, onChange, venue, required, compact }) {
   const [allPics, setAllPics] = useState([]);
   const [open, setOpen] = useState(false);
   const [highlight, setHighlight] = useState(-1);
@@ -59,7 +59,7 @@ export default function PicAutocomplete({ value, onChange, venue, required }) {
   return (
     <div ref={wrapRef} className="relative">
       <div className="relative">
-        <Search size={14} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+        <Search size={compact ? 12 : 14} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
         <input
           type="text"
           required={required}
@@ -67,8 +67,8 @@ export default function PicAutocomplete({ value, onChange, venue, required }) {
           onChange={(e) => { onChange(e.target.value); setOpen(true); setHighlight(-1); }}
           onFocus={() => setOpen(true)}
           onKeyDown={handleKeyDown}
-          placeholder="Ketik nama PIC (baru atau yang sudah ada)"
-          className="input pl-8"
+          placeholder={compact ? "Nama PIC" : "Ketik nama PIC (baru atau yang sudah ada)"}
+          className={compact ? "w-full rounded-md border border-slate-300 py-1 pl-6 pr-1.5 text-xs focus:border-blue-500 focus:outline-none" : "input pl-8"}
           autoComplete="off"
         />
       </div>

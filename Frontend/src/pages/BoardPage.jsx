@@ -8,9 +8,8 @@ import BarChartCard from "../components/BarChartCard";
 import DonutCard from "../components/DonutCard";
 import Toolbar from "../components/Toolbar";
 import ProblemTable from "../components/ProblemTable";
-import ProblemModal from "../components/ProblemModal";
 import Lightbox from "../components/Lightbox";
-import { getProblems, getSummary, createProblem, updateProblem, deleteProblem, apiBaseLabel } from "../api/problems";
+import { getProblems, getSummary, deleteProblem, apiBaseLabel } from "../api/problems";
 
 const CLASS_COLOR = { Quality: "#3b82f6", Production: "#8b5cf6", Machine: "#f59e0b", Material: "#14b8a6" };
 
@@ -19,9 +18,7 @@ export default function BoardPage({ venue }) {
   const [summary, setSummary] = useState(null);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("All");
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState(null);
-  const [submitting, setSubmitting] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
   const [lightbox, setLightbox] = useState(null);
   const [loadError, setLoadError] = useState(false);
   const [showInsights, setShowInsights] = useState(true);
@@ -38,10 +35,11 @@ export default function BoardPage({ venue }) {
     }
   }, [venue, search, status]);
 
-  // reset filter tiap pindah venue biar gak ketuker
+  // reset filter & form input tiap pindah venue biar gak ketuker
   useEffect(() => {
     setSearch("");
     setStatus("All");
+    setIsAdding(false);
   }, [venue]);
 
   // debounce biar gak fetch tiap ketikan
@@ -49,24 +47,6 @@ export default function BoardPage({ venue }) {
     const t = setTimeout(refresh, 250);
     return () => clearTimeout(t);
   }, [refresh]);
-
-  const handleAdd = () => { setEditing(null); setModalOpen(true); };
-  const handleEdit = (row) => { setEditing(row); setModalOpen(true); };
-  const handleClose = () => setModalOpen(false);
-
-  const handleSubmit = async (formData, id) => {
-    setSubmitting(true);
-    try {
-      if (id) await updateProblem(id, formData);
-      else await createProblem(formData);
-      setModalOpen(false);
-      refresh();
-    } catch (err) {
-      alert(err.message || "Gagal simpan");
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   const handleDelete = async (id) => {
     if (!confirm("Hapus problem ini?")) return;
@@ -80,7 +60,7 @@ export default function BoardPage({ venue }) {
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-800">
-      <Header onAdd={handleAdd} venue={venue} />
+      <Header onAdd={() => setIsAdding(true)} venue={venue} />
       <VenueTabs active={venue} />
 
       <main className="mx-auto max-w-[1920px] p-6">
@@ -129,18 +109,17 @@ export default function BoardPage({ venue }) {
 
         <Toolbar search={search} setSearch={setSearch} status={status} setStatus={setStatus} count={rows.length} venue={venue} />
 
-        <ProblemTable rows={rows} onEdit={handleEdit} onDelete={handleDelete} onPhotoClick={setLightbox} />
+        <ProblemTable
+          rows={rows}
+          venue={venue}
+          onDelete={handleDelete}
+          onPhotoClick={setLightbox}
+          isAdding={isAdding}
+          onCancelAdd={() => setIsAdding(false)}
+          onSaved={refresh}
+        />
       </main>
 
-      <ProblemModal
-        open={modalOpen}
-        editing={editing}
-        venue={venue}
-        onClose={handleClose}
-        onSubmit={handleSubmit}
-        submitting={submitting}
-        onPreviewClick={setLightbox}
-      />
       <Lightbox src={lightbox} onClose={() => setLightbox(null)} />
     </div>
   );

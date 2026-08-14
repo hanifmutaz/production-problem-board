@@ -18,7 +18,7 @@ export default function Header({ onAdd, venue }) {
           className="flex items-center gap-3"
         >
           <img
-            src="/hirose-logo.jpg"
+            src="/hirose-logo.png"
             alt="Hirose Electric"
             className="h-9 w-auto border-r border-white/20 pr-3"
           />

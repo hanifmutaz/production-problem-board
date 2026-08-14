@@ -227,10 +227,10 @@ app.get("/api/export/csv", asyncRoute(async (req, res) => {
     ? "SELECT * FROM problems WHERE venue = $1 ORDER BY date DESC, id DESC"
     : "SELECT * FROM problems ORDER BY date DESC, id DESC";
   const { rows } = await pool.query(sql, venue && venue !== "All" ? [venue] : []);
-  const headers = ["No","Venue","Date","Problem","Qty","Utilisation","PPM","PPM Output","Root Cause","Countermeasure","Classification","PIC","Due Date","Status"];
+  const headers = ["No","Venue","Date","Problem","Qty","Root Cause","Countermeasure","Classification","PIC","Due Date","Status"];
   const esc = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
   const csv = [headers, ...rows.map((r,i)=>[
-    i+1, r.venue, r.date, r.problem, r.qty, r.utilisation, r.ppm, r.ppm_output,
+    i+1, r.venue, r.date, r.problem, r.qty,
     r.root_cause, r.countermeasure, r.classification, r.pic, r.due_date, r.status
   ])].map(r => r.map(esc).join(",")).join("\r\n");
   res.setHeader("Content-Type", "text/csv; charset=utf-8");
