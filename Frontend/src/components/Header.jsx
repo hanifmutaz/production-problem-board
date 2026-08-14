@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { FileSpreadsheet, FileText, Plus } from "lucide-react";
 import { exportCsvUrl } from "../api/problems";
 
-export default function Header({ onAdd }) {
+export default function Header({ onAdd, venue }) {
   return (
     <motion.header
       initial={{ y: -40, opacity: 0 }}
@@ -10,15 +10,29 @@ export default function Header({ onAdd }) {
       transition={{ duration: 0.45, ease: "easeOut" }}
       className="bg-navy text-white shadow-md"
     >
-      <div className="mx-auto flex max-w-[1180px] flex-wrap items-center justify-between gap-3 px-6 py-4">
-        <motion.h1
+      <div className="mx-auto flex max-w-[1920px] flex-wrap items-center justify-between gap-3 px-6 py-4">
+        <motion.div
           initial={{ opacity: 0, x: -12 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.4, delay: 0.1 }}
-          className="text-lg font-semibold tracking-wide"
+          className="flex items-center gap-3"
         >
-          PRODUCTION PROBLEM CONTROL BOARD
-        </motion.h1>
+          <img
+            src="/hirose-logo.jpg"
+            alt="Hirose Electric"
+            className="h-9 w-auto border-r border-white/20 pr-3"
+          />
+          <div>
+            <h1 className="text-lg font-semibold tracking-wide">
+              PRODUCTION PROBLEM CONTROL BOARD
+            </h1>
+            {venue && (
+              <p className="text-xs font-medium text-white/70">Venue: {venue}</p>
+            )}
+          </div>
+        </motion.div>
+
+        {/* KANAN: tombol-tombol */}
         <motion.div
           initial={{ opacity: 0, x: 12 }}
           animate={{ opacity: 1, x: 0 }}
@@ -26,7 +40,7 @@ export default function Header({ onAdd }) {
           className="flex gap-2"
         >
           <motion.a
-            href={exportCsvUrl()}
+            href={exportCsvUrl(venue)}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="flex items-center gap-1.5 rounded-lg bg-green-700 px-4 py-2.5 text-sm font-semibold hover:bg-green-800"

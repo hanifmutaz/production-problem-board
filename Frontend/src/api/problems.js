@@ -6,6 +6,19 @@ const API = import.meta.env.VITE_API_BASE || "/api";
 // Label buat ditampilin di pesan error kalau fetch gagal - biar gak hardcode port yang salah.
 export const apiBaseLabel = import.meta.env.VITE_API_BASE || "backend (lihat vite.config.js proxy)";
 
+// Daftar venue - dipakai buat routing FE (harus sama persis dengan VENUES di Backend/db.js)
+export const VENUES = ["Hirose Internal", "SGP", "Systech"];
+
+// Ubah nama venue jadi slug buat URL, mis. "Hirose Internal" -> "hirose-internal"
+export function venueToSlug(venue) {
+  return venue.toLowerCase().replace(/\s+/g, "-");
+}
+
+// Kebalikannya: slug URL -> nama venue asli. Return null kalau gak valid.
+export function slugToVenue(slug) {
+  return VENUES.find((v) => venueToSlug(v) === slug) || null;
+}
+
 async function toJson(res) {
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
@@ -14,13 +27,20 @@ async function toJson(res) {
   return res.json();
 }
 
-export function getProblems(q = "", status = "All") {
-  const params = new URLSearchParams({ q, status });
+export function getProblems(venue, q = "", status = "All") {
+  const params = new URLSearchParams({ venue, q, status });
   return fetch(`${API}/problems?${params}`).then(toJson);
 }
 
-export function getSummary() {
-  return fetch(`${API}/summary`).then(toJson);
+// Daftar nama PIC yang pernah disubmit sebelumnya (buat saran autocomplete, bukan daftar tetap)
+export function getPics(venue) {
+  const params = new URLSearchParams({ venue });
+  return fetch(`${API}/pics?${params}`).then(toJson);
+}
+
+export function getSummary(venue) {
+  const params = new URLSearchParams({ venue });
+  return fetch(`${API}/summary?${params}`).then(toJson);
 }
 
 export function createProblem(formData) {
@@ -35,8 +55,9 @@ export function deleteProblem(id) {
   return fetch(`${API}/problems/${id}`, { method: "DELETE" }).then(toJson);
 }
 
-export function exportCsvUrl() {
-  return `${API}/export/csv`;
+export function exportCsvUrl(venue) {
+  const params = new URLSearchParams({ venue });
+  return `${API}/export/csv?${params}`;
 }
 
 // Foto disimpan backend sebagai path relatif ("/uploads/xxx.png").

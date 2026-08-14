@@ -2,16 +2,16 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ImagePlus, X, ZoomIn } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { resolvePhotoUrl } from "../api/problems";
+import PicAutocomplete from "./PicAutocomplete";
 
-const PIC_OPTIONS = ["Hanif Mutaz", "Tety Uci", "Ridho Tri", "Liska Waluyan"];
 const CLASS_OPTIONS = ["Quality", "Production", "Machine", "Material"];
 
 const emptyForm = {
-  date: "", problem: "", qty: "", classification: "", root_cause: "",
-  countermeasure: "", pic: "", due_date: "", status: "Open",
+  date: "", problem: "", qty: "", utilisation: "", ppm: "", ppm_output: "",
+  classification: "", root_cause: "", countermeasure: "", pic: "", due_date: "", status: "Open",
 };
 
-export default function ProblemModal({ open, editing, onClose, onSubmit, submitting, onPreviewClick }) {
+export default function ProblemModal({ open, editing, venue, onClose, onSubmit, submitting, onPreviewClick }) {
   const [form, setForm] = useState(emptyForm);
   const [photoFile, setPhotoFile] = useState(null);
   const [preview, setPreview] = useState(null);
@@ -23,6 +23,7 @@ export default function ProblemModal({ open, editing, onClose, onSubmit, submitt
     if (editing) {
       setForm({
         date: editing.date || "", problem: editing.problem || "", qty: editing.qty ?? "",
+        utilisation: editing.utilisation || "", ppm: editing.ppm || "", ppm_output: editing.ppm_output || "",
         classification: editing.classification || "", root_cause: editing.root_cause || "",
         countermeasure: editing.countermeasure || "", pic: editing.pic || "",
         due_date: editing.due_date || "", status: editing.status || "Open",
@@ -53,6 +54,7 @@ export default function ProblemModal({ open, editing, onClose, onSubmit, submitt
     if (!form.date || !form.problem.trim() || !form.pic) return;
 
     const fd = new FormData();
+    fd.append("venue", venue);
     Object.entries(form).forEach(([k, v]) => fd.append(k, v));
     if (photoFile) fd.append("photo", photoFile);
     if (removePhoto) fd.append("removePhoto", "1");
@@ -209,6 +211,21 @@ export default function ProblemModal({ open, editing, onClose, onSubmit, submitt
                 </Field>
               </div>
 
+              <div>
+                <label className="mb-1.5 block text-[13px] font-semibold text-slate-700">Impact</label>
+                <div className="grid grid-cols-3 gap-3 max-sm:grid-cols-1">
+                  <Field label="Utilisation">
+                    <input type="text" placeholder="Cth: 85%" value={form.utilisation} onChange={field("utilisation")} className="input" />
+                  </Field>
+                  <Field label="PPM">
+                    <input type="text" placeholder="Cth: 120" value={form.ppm} onChange={field("ppm")} className="input" />
+                  </Field>
+                  <Field label="PPM Output">
+                    <input type="text" placeholder="Cth: 95" value={form.ppm_output} onChange={field("ppm_output")} className="input" />
+                  </Field>
+                </div>
+              </div>
+
               <Field label="Root Cause">
                 <textarea rows={2} value={form.root_cause} onChange={field("root_cause")}
                   placeholder="Cth: Jig aus" className="input" />
@@ -220,10 +237,12 @@ export default function ProblemModal({ open, editing, onClose, onSubmit, submitt
 
               <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
                 <Field label="PIC" required>
-                  <select required value={form.pic} onChange={field("pic")} className="input">
-                    <option value="">- Pilih -</option>
-                    {PIC_OPTIONS.map((p) => <option key={p}>{p}</option>)}
-                  </select>
+                  <PicAutocomplete
+                    value={form.pic}
+                    onChange={(v) => setForm((f) => ({ ...f, pic: v }))}
+                    venue={venue}
+                    required
+                  />
                 </Field>
                 <Field label="Due Date">
                   <input type="date" value={form.due_date} onChange={field("due_date")} className="input" />

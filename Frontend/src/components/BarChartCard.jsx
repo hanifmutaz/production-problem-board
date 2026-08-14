@@ -9,16 +9,16 @@ export default function BarChartCard({ title, data, colorFor }) {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay: 0.2 }}
-      className="rounded-2xl border border-slate-200 bg-white p-4.5 shadow-sm"
+      className="min-w-[240px] flex-[1.3] rounded-2xl border border-slate-200 bg-white p-3.5 shadow-sm"
     >
-      <h3 className="mb-3.5 text-sm font-semibold text-slate-700">{title}</h3>
+      <h3 className="mb-2.5 text-xs font-semibold text-slate-700">{title}</h3>
       {entries.length === 0 ? (
-        <div className="py-6 text-center text-sm text-slate-400">Belum ada data</div>
+        <div className="py-4 text-center text-sm text-slate-400">Belum ada data</div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {entries.map(([name, val], i) => (
-            <div key={name} className="flex items-center gap-2.5">
-              <div className="w-20 shrink-0 truncate text-right text-xs text-slate-600" title={name}>
+            <div key={name} className="flex items-center gap-2">
+              <div className="w-16 shrink-0 truncate text-right text-[11px] text-slate-600" title={name}>
                 {name}
               </div>
               <div className="h-5 flex-1 overflow-hidden rounded-md bg-slate-100">
@@ -31,7 +31,7 @@ export default function BarChartCard({ title, data, colorFor }) {
                   transition={{ duration: 0.6, delay: i * 0.06, ease: "easeOut" }}
                 />
               </div>
-              <div className="w-6 text-xs font-semibold text-slate-700">{val}</div>
+              <div className="w-5 text-[11px] font-semibold text-slate-700">{val}</div>
             </div>
           ))}
         </div>
