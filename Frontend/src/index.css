@@ -49,3 +49,146 @@ button:disabled {
 .animate-pulse-slow {
   animation: pulse-slow 2.2s ease-in-out infinite;
 }
+
+/* Skeleton loading placeholder - dipakai KpiCards/Chart/Table pas data awal belum dateng */
+@keyframes skeleton-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton-pulse {
+  display: block;
+  background: linear-gradient(90deg, #e2e8f0 25%, #eef2f7 37%, #e2e8f0 63%);
+  background-size: 400% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+/* Thin indeterminate progress bar dipakai pas refresh/refetch lagi jalan di background */
+@keyframes loading-bar-slide {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(250%); }
+}
+.loading-bar-track {
+  position: relative;
+  overflow: hidden;
+  background: rgba(31, 58, 95, 0.12);
+}
+.loading-bar-fill {
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: var(--color-navy);
+  animation: loading-bar-slide 1.1s ease-in-out infinite;
+}
+
+/* Hormatin setting "Reduce Motion" user - animasi jadi instan/statis, bukan dimatiin
+   total (skeleton shimmer & loading bar tetep kelihatan jalan, cuma gak "flashy"). */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .skeleton-pulse {
+    animation: none;
+    background: #e2e8f0;
+  }
+  .loading-bar-fill {
+    animation: none;
+    width: 100%;
+    opacity: 0.5;
+  }
+}
+
+/* ============================================================
+   Responsive table -> card di layar sempit (HP/iPad portrait).
+   Trik CSS klasik: di breakpoint mobile, <table>/<tr>/<td> dipaksa
+   jadi display:block, tiap <tr> jadi 1 "card", tiap <td> nunjukin
+   label-nya sendiri lewat ::before { content: attr(data-label) }.
+   Gak perlu duplikasi markup/komponen buat versi mobile - table
+   di ProblemTable.jsx sama persis, cuma ditandain data-label per sel.
+   ============================================================ */
+@media (max-width: 767px) {
+  /* Header asli disembunyiin visual tapi tetep ada buat screen reader
+     (bukan display:none, biar assistive tech masih bisa baca konteks kolom) */
+  .responsive-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .responsive-table,
+  .responsive-table tbody,
+  .responsive-table tr {
+    display: block;
+    width: 100% !important;
+  }
+
+  .responsive-table tr {
+    margin-bottom: 0.65rem;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+  }
+  .responsive-table tr:last-child {
+    margin-bottom: 0;
+  }
+
+  .responsive-table td {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    width: 100% !important;
+    min-height: 2.25rem;
+    padding: 0.5rem 0.75rem;
+    border: none !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    text-align: right;
+  }
+  .responsive-table tr > td:last-child {
+    border-bottom: none !important;
+  }
+
+  /* Label otomatis dari attribute data-label - lihat ProblemTable.jsx */
+  .responsive-table td[data-label]::before {
+    content: attr(data-label);
+    flex: 0 0 auto;
+    margin-right: auto;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: #64748b;
+    text-align: left;
+  }
+
+  /* Field isinya panjang (problem/root cause/countermeasure) -> label di atas,
+     isi di bawah full width, biar gak kepepet & gampang dibaca */
+  .responsive-table td.cell-stack {
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+  .responsive-table td.cell-stack::before {
+    margin-right: 0;
+  }
+
+  /* Divider bulan/minggu, empty-state, skeleton row, & kolom aksi:
+     gak butuh label - biarin tampil polos full-width kayak aslinya */
+  .responsive-table td.cell-plain {
+    display: block;
+    text-align: left;
+    min-height: 0;
+  }
+  .responsive-table td.cell-plain::before {
+    content: none;
+  }
+}

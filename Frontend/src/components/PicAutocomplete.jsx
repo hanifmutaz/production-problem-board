@@ -3,6 +3,8 @@ import { Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { getPics } from "../api/problems";
 
+const HIGHLIGHT_ITEM_ATTR = "data-pic-option-index";
+
 // Input PIC bebas ketik (bukan dropdown tetap). Nama-nama yang pernah disubmit
 // sebelumnya muncul sebagai rekomendasi/saran, tapi nama baru tetap bisa diketik & disimpan.
 export default function PicAutocomplete({ value, onChange, venue, required, compact }) {
@@ -10,6 +12,15 @@ export default function PicAutocomplete({ value, onChange, venue, required, comp
   const [open, setOpen] = useState(false);
   const [highlight, setHighlight] = useState(-1);
   const wrapRef = useRef(null);
+  const listRef = useRef(null);
+
+  // pas navigasi pake arrow key, pastiin item yang lagi di-highlight kelihatan
+  // (auto-scroll) - kepake banget kalau daftar PIC-nya panjang.
+  useEffect(() => {
+    if (highlight < 0 || !listRef.current) return;
+    const el = listRef.current.querySelector(`[${HIGHLIGHT_ITEM_ATTR}="${highlight}"]`);
+    el?.scrollIntoView({ block: "nearest" });
+  }, [highlight]);
 
   // ambil daftar nama PIC yang pernah dipakai di venue ini, tiap kali venue berubah
   useEffect(() => {
@@ -76,15 +87,20 @@ export default function PicAutocomplete({ value, onChange, venue, required, comp
       <AnimatePresence>
         {open && suggestions.length > 0 && (
           <motion.ul
+            ref={listRef}
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.15 }}
+            role="listbox"
             className="absolute z-10 mt-1 max-h-44 w-full overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg"
           >
             {suggestions.map((name, i) => (
               <li
                 key={name}
+                {...{ [HIGHLIGHT_ITEM_ATTR]: i }}
+                role="option"
+                aria-selected={highlight === i}
                 onMouseDown={(e) => { e.preventDefault(); pick(name); }}
                 onMouseEnter={() => setHighlight(i)}
                 className={`cursor-pointer px-3 py-1.5 text-sm ${
