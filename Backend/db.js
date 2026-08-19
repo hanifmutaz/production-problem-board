@@ -43,18 +43,32 @@ const CREATE_TABLE_SQL = `
 `;
 
 // Migrasi ringan buat DB yang sudah pernah dibuat sebelum kolom venue/impact ditambahkan
-const MIGRATE_SQL = `
-  ALTER TABLE problems ADD COLUMN IF NOT EXISTS venue TEXT NOT NULL DEFAULT 'Hirose Internal';
-  ALTER TABLE problems ADD COLUMN IF NOT EXISTS utilisation TEXT;
-  ALTER TABLE problems ADD COLUMN IF NOT EXISTS ppm TEXT;
-  ALTER TABLE problems ADD COLUMN IF NOT EXISTS ppm_output TEXT;
-`;
+// Pakai DO block + information_schema (bukan "ADD COLUMN IF NOT EXISTS") biar
+// tetap jalan di PostgreSQL versi lama (< 9.6) yang belum support sintaks itu.
+const MIGRATE_COLUMNS = [
+  { name: "venue", ddl: "ADD COLUMN venue TEXT NOT NULL DEFAULT 'Hirose Internal'" },
+  { name: "utilisation", ddl: "ADD COLUMN utilisation TEXT" },
+  { name: "ppm", ddl: "ADD COLUMN ppm TEXT" },
+  { name: "ppm_output", ddl: "ADD COLUMN ppm_output TEXT" },
+];
+
+async function migrateColumns() {
+  const { rows } = await pool.query(
+    `SELECT column_name FROM information_schema.columns WHERE table_name = 'problems'`
+  );
+  const existing = new Set(rows.map(r => r.column_name));
+  for (const col of MIGRATE_COLUMNS) {
+    if (!existing.has(col.name)) {
+      await pool.query(`ALTER TABLE problems ${col.ddl}`);
+    }
+  }
+}
 
 // Jalanin sekali pas server start: create table kalau belum ada + migrate
 // (Production: gak ada auto-seed data dummy — tabel mulai kosong)
 async function init() {
   await pool.query(CREATE_TABLE_SQL);
-  await pool.query(MIGRATE_SQL);
+  await migrateColumns();
 }
 
 module.exports = { pool, init, VENUES };
