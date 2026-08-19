@@ -6,6 +6,12 @@ const MONTH_ID = [
   "Juli", "Agustus", "September", "Oktober", "November", "Desember",
 ];
 
+// Singkatan custom (bukan cuma slice 3 huruf) - Agt & Sept beda dari default
+const MONTH_ID_SHORT = [
+  "Jan", "Feb", "Mar", "Apr", "Mei", "Jun",
+  "Jul", "Agt", "Sept", "Okt", "Nov", "Des",
+];
+
 export function monthKey(dateStr) {
   const d = new Date(dateStr);
   return `${d.getFullYear()}-${d.getMonth()}`;
@@ -14,6 +20,14 @@ export function monthKey(dateStr) {
 export function monthLabel(dateStr) {
   const d = new Date(dateStr);
   return `${MONTH_ID[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+// Format tanggal buat ditampilin di tabel: "24 Jul 2026" (bulan disingkat 3 huruf biar ringkas)
+export function formatDate(dateStr) {
+  if (!dateStr) return "-";
+  const d = new Date(dateStr);
+  if (isNaN(d)) return dateStr; // fallback kalau formatnya gak dikenali
+  return `${d.getDate()} ${MONTH_ID_SHORT[d.getMonth()]} ${d.getFullYear()}`;
 }
 
 function startOfWeek(dateStr) {
@@ -34,7 +48,7 @@ export function weekLabel(dateStr) {
   const start = startOfWeek(dateStr);
   const end = new Date(start);
   end.setDate(start.getDate() + 6);
-  const fmt = (d) => `${d.getDate()} ${MONTH_ID[d.getMonth()].slice(0, 3)}`;
+  const fmt = (d) => `${d.getDate()} ${MONTH_ID_SHORT[d.getMonth()]}`;
   return `Minggu ${fmt(start)} - ${fmt(end)}`;
 }
 

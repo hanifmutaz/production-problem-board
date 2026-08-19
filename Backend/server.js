@@ -12,9 +12,11 @@ const { pool, init, VENUES } = require("./db");
 const app = express();
 const PORT = process.env.PORT || 6000;
 
-app.use(cors());                                                // biar gampang disambungin ke frontend React/Vite terpisah
+// Production: 1 origin (backend serve hasil build frontend), jadi CORS gak wajib.
+// Tetep di-enable ringan buat jaga-jaga kalau suatu saat diakses dari origin lain di jaringan internal.
+app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));        // serve frontend + foto
+app.use(express.static(path.join(__dirname, "public")));        // serve hasil build frontend (Vite) + foto
 app.use("/uploads", express.static(path.join(__dirname, "public", "uploads")));
 
 // ---- Upload foto ----
@@ -240,6 +242,14 @@ app.get("/api/export/csv", asyncRoute(async (req, res) => {
 
 // 404 buat route API yang gak ke-mapping
 app.use("/api", (req, res) => res.status(404).json({ error: "Endpoint not found" }));
+
+// SPA fallback: route non-API (mis. refresh di /sgp atau /systech) tetep balikin index.html
+// biar react-router yang nanganin routing di client
+app.get(/^(?!\/api|\/uploads).*/, (req, res, next) => {
+  const indexPath = path.join(__dirname, "public", "index.html");
+  if (fs.existsSync(indexPath)) return res.sendFile(indexPath);
+  next();
+});
 
 // Error handler (nangkep error dari multer: file kegedean / bukan gambar, juga error DB)
 app.use((err, req, res, next) => {

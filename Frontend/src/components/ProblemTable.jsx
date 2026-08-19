@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Camera, Check, ImageOff, Pencil, Plus, Trash2, X, ZoomIn } from "lucide-react";
 import { useState } from "react";
 import { createProblem, resolvePhotoUrl, updateProblem } from "../api/problems";
-import { buildGroupedItems } from "../utils/dateGroups";
+import { buildGroupedItems, formatDate } from "../utils/dateGroups";
 import PicAutocomplete from "./PicAutocomplete";
 
 const TODAY = new Date().toISOString().slice(0, 10);
@@ -264,7 +264,7 @@ export default function ProblemTable({ rows, venue, onDelete, onPhotoClick, isAd
                     className={`border-t border-slate-100 ${isOverdue(p) ? "bg-red-50 animate-pulse-slow" : ""}`}
                   >
                     <td className="border border-slate-100 p-3">{item.no}</td>
-                    <td className="border border-slate-100 p-3 whitespace-nowrap">{p.date}</td>
+                    <td className="border border-slate-100 p-3 whitespace-nowrap">{formatDate(p.date)}</td>
                     <td className="border border-slate-100 p-3 whitespace-pre-wrap break-words">{p.problem}</td>
                     <td className="border border-slate-100 p-3">
                       {p.photo ? (
@@ -290,7 +290,7 @@ export default function ProblemTable({ rows, venue, onDelete, onPhotoClick, isAd
                     <td className="border border-slate-100 p-3 whitespace-pre-wrap break-words">{p.countermeasure || "-"}</td>
                     <td className="border border-slate-100 p-3">{p.classification || "-"}</td>
                     <td className="border border-slate-100 p-3 whitespace-nowrap">{p.pic}</td>
-                    <td className="border border-slate-100 p-3 whitespace-nowrap">{p.due_date || "-"}</td>
+                    <td className="border border-slate-100 p-3 whitespace-nowrap">{p.due_date ? formatDate(p.due_date) : "-"}</td>
                     <td className="border border-slate-100 p-3"><Badge status={p.status} /></td>
                     <td className="border border-slate-100 p-3 no-print">
                       <div className="flex gap-1.5">

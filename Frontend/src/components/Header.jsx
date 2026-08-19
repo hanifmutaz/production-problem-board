@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { FileSpreadsheet, FileText, Plus } from "lucide-react";
+import { FileSpreadsheet, Plus } from "lucide-react";
 import { exportCsvUrl } from "../api/problems";
 
 export default function Header({ onAdd, venue }) {
@@ -47,14 +47,6 @@ export default function Header({ onAdd, venue }) {
           >
             <FileSpreadsheet size={16} /> Export Excel
           </motion.a>
-          <motion.button
-            onClick={() => window.print()}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="flex items-center gap-1.5 rounded-lg bg-red-700 px-4 py-2.5 text-sm font-semibold hover:bg-red-800"
-          >
-            <FileText size={16} /> Export PDF
-          </motion.button>
           <motion.button
             onClick={onAdd}
             whileHover={{ scale: 1.05 }}
